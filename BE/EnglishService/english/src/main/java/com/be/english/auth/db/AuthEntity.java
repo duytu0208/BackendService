@@ -18,6 +18,7 @@ import java.util.Collection;
 @Table(name = "app_signup")
 public class AuthEntity extends AbstractEntity<Long> implements UserDetails {
     /**
+     *
      * TODO [SpringSecurity #1] implements UserDetails of SpringSecurity
      * Trong Spring Security, UserDetails là một interface đại diện cho các thông tin về người dùng,
      * được sử dụng bởi Spring Security để xác thực và phân quyền.

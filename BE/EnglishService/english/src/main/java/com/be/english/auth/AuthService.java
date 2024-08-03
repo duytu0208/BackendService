@@ -2,6 +2,7 @@ package com.be.english.auth;
 
 import com.be.english.auth.db.AuthEntity;
 import com.be.english.auth.db.AuthRepository;
+import com.be.english.auth.db.TokenEntity;
 import com.be.english.common.AbstractEntity;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import static com.be.english.common.TokenType.ACCESS_TOKEN;
 import static com.be.english.common.TokenType.REFRESH_TOKEN;
 
 @Service
@@ -33,6 +35,9 @@ public class AuthService {
 
     @Autowired
     private JwtService jwtService;
+
+    @Autowired
+    private TokenService tokenService;
 
     public Long signup(Auth.SignUpRequest request) {
 
@@ -64,7 +69,9 @@ public class AuthService {
 
 
     public Auth.SignInResponse signIn(Auth.SignInRequest request) {
-        /** TODO [SpringSecurity #7 START] xác thực thông tin đăng nhập của người dùng
+        /**
+         *
+         * TODO [SpringSecurity #7 START] xác thực thông tin đăng nhập của người dùng
          * 1/Tạo UsernamePasswordAuthenticationToken:
          * UsernamePasswordAuthenticationToken là một implementation của ===> interface Authentication
          * được sử dụng để chứa thông tin xác thực của người dùng.
@@ -87,17 +94,25 @@ public class AuthService {
         Authentication authRequest = new UsernamePasswordAuthenticationToken(request.userName(), request.password());
         Authentication authenticate = authenticationManager.authenticate(authRequest);
         /**
+         *
          * TODO [SpringSecurity #7 END] xác thực thông tin đăng nhập của người dùng
          */
 
         var user = authRepository.findByUsername(request.userName())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
         /**
+         *
          * TODO [SpringSecurity #9] impl generateToken
          */
         var accessToken = jwtService.generateToken(user); // impl generateToken
 
         var refreshToken = jwtService.generateRefreshToken(user);
+
+        var tokenId = tokenService.save(TokenEntity.builder()
+                        .username(user.getUsername())
+                        .accessToken(accessToken)
+                        .refreshToken(refreshToken)
+                        .build());
 
         return Auth.SignInResponse.builder()
                 .accessToken(accessToken)
@@ -109,6 +124,7 @@ public class AuthService {
     }
 
     /**
+     *
      * TODO [SpringSecurity #11] refresh Token
      * Nguyên tắc là tạo thêm 1 secretKey cho refresh Token => expiryDay nhiều hơn accessToken
      * Mỗi lần refreshToken thì giữ nguyên cái refreshToken gốc, chỉ rênw accessToken,
@@ -127,6 +143,12 @@ public class AuthService {
         String accessToken = null;
         if (jwtService.isTokenValid(refreshToken, REFRESH_TOKEN, user.get())) {
             accessToken = jwtService.generateToken(user.get());
+
+            var tokenId = tokenService.save(TokenEntity.builder()
+                    .username(user.get().getUsername())
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
+                    .build());
         }
 
         return Auth.SignInResponse.builder()
@@ -136,5 +158,27 @@ public class AuthService {
                 .phoneNumber("dummy")
                 .role("dummy")
                 .build();
+    }
+
+
+    /**
+     *
+     */
+    public String logout(HttpServletRequest httpServletRequest) {
+
+        System.out.println(httpServletRequest.getHeader("x-token"));
+        String accessToken = httpServletRequest.getHeader("x-token"); // Đối với logout thì phải truyền accessToken
+
+        // Extract user from token
+        final String userName = jwtService.extractUserName(accessToken, ACCESS_TOKEN);
+
+        // Check it into DB
+        var user = authRepository.findByUsername(userName);
+
+        var currentToken = tokenService.findByUserName(user.get().getUsername());
+
+        tokenService.delete(currentToken);
+
+        return "Deleted token";
     }
 }

@@ -25,6 +25,7 @@ import static com.be.english.common.TokenType.REFRESH_TOKEN;
 public class JwtService {
 
     /**
+     *
      * Add [for SpringSecurity #9] No4
      * Biến secretKey lưu trữ khóa bí mật dùng để ký JWT.
      * Đây là một chuỗi được mã hóa Base64 (secretKey gốc đã được mã hoá) => Detail in application.properties
@@ -40,7 +41,9 @@ public class JwtService {
     private Integer expiryDay;
 
 
-    /** Add [for SpringSecurity #9] No1 ==> Control F find all 'Add [for SpringSecurity #9]'
+    /**
+     *
+     * Add [for SpringSecurity #9] No1 ==> Control F find all 'Add [for SpringSecurity #9]'
      * Tạo JWT cho người dùng với các claims mặc định hoặc thêm claims (extraClaimsMap.put("message", "demo");)
      */
     public String generateToken(UserDetails userDetails) {
@@ -53,7 +56,9 @@ public class JwtService {
     }
 
 
-    /** Add [for SpringSecurity #9] No2
+    /**
+     *
+     * Add [for SpringSecurity #9] No2
      * Tạo JWT với các claims bổ sung và thông tin người dùng.
      */
     private String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
@@ -67,6 +72,7 @@ public class JwtService {
 
 
     /**
+     *
      * Add [for SpringSecurity #9] No3
      * Phương thức này trả về khóa ký JWT.
      */
@@ -82,6 +88,7 @@ public class JwtService {
 
 
     /**
+     *
      * Add [for SpringSecurity #10] No3
      * Trích xuất tên người dùng từ token JWT
      *
@@ -94,6 +101,7 @@ public class JwtService {
 
 
     /**
+     *
      * Add [for SpringSecurity #10] No4
      * Trích xuất một claim cụ thể từ token JWT.
      *
@@ -108,6 +116,7 @@ public class JwtService {
 
 
     /**
+     *
      * Add [for SpringSecurity #10] No5
      * Trích xuất tất cả các claims từ token JWT
      *
@@ -127,6 +136,7 @@ public class JwtService {
 
 
     /**
+     *
      * Add [for SpringSecurity #10] No6
      * Xác thực tính hợp lệ của token JWT
      *
@@ -143,6 +153,7 @@ public class JwtService {
 
 
     /**
+     *
      * Add [for SpringSecurity #10] No7
      * Kiểm tra xem token JWT có bị hết hạn hay không
      *
@@ -157,6 +168,7 @@ public class JwtService {
 
 
     /**
+     *
      * Add [for SpringSecurity #10] No8
      * Trích xuất ngày hết hạn của token từ token JWT
      *

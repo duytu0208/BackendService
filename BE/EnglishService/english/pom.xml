@@ -56,7 +56,6 @@
 		</dependency>
 		<!--TODO [SpringSecurity #0] Add dependency for Security - JWT END-->
 
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>

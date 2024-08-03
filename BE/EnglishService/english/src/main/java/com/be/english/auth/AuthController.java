@@ -33,4 +33,12 @@ public class AuthController {
     public ResponseSuccess refreshToken(HttpServletRequest httpServletRequest) {
         return new ResponseSuccess(HttpStatus.CREATED, "Refresh Token", authService.refreshToken(httpServletRequest));
     }
+
+    /**
+     * TODO [SpringSecurity #12] logout
+     */
+    @PostMapping("/logout")
+    public ResponseSuccess logout(HttpServletRequest httpServletRequest) {
+        return new ResponseSuccess(HttpStatus.CREATED, "Logout success", authService.logout(httpServletRequest));
+    }
 }
