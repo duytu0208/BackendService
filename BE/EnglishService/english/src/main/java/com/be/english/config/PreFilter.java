@@ -19,6 +19,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+import static com.be.english.common.TokenType.ACCESS_TOKEN;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @Component
@@ -48,14 +49,14 @@ public class PreFilter extends OncePerRequestFilter {
             return;
         }
         final String jwt = authHeader.substring(7); // Cắt bỏ phần "Bearer " để lấy token JWT.
-        final String userName = jwtService.extractUserName(jwt); // trích xuất tên người dùng từ token JWT.
+        final String userName = jwtService.extractUserName(jwt, ACCESS_TOKEN); // trích xuất tên người dùng từ token JWT.
 
         // Kiểm tra xem tên người dùng có hợp lệ và người dùng chưa được xác thực trong SecurityContext hay không.
         if (StringUtils.isNotEmpty(userName) && SecurityContextHolder.getContext().getAuthentication() == null) {
 
             UserDetails userDetails = authRepository.findByUsername(userName).get(); // tải thông tin người dùng từ tên người dùng.
 
-            if (jwtService.isTokenValid(jwt, userDetails)) { // Kiểm tra tính hợp lệ của token JWT bằng cách so sánh với thông tin người dùng
+            if (jwtService.isTokenValid(jwt, ACCESS_TOKEN, userDetails)) { // Kiểm tra tính hợp lệ của token JWT bằng cách so sánh với thông tin người dùng
 
                 // Cập nhật SecurityContext với thông tin đã xác thực.
                 SecurityContext context = SecurityContextHolder.createEmptyContext();

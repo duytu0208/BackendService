@@ -5,15 +5,17 @@ import com.be.english.auth.db.AuthRepository;
 import com.be.english.common.AbstractEntity;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import static com.be.english.common.TokenType.REFRESH_TOKEN;
 
 @Service
 @RequiredArgsConstructor
@@ -95,10 +97,42 @@ public class AuthService {
          */
         var accessToken = jwtService.generateToken(user); // impl generateToken
 
+        var refreshToken = jwtService.generateRefreshToken(user);
+
         return Auth.SignInResponse.builder()
                 .accessToken(accessToken)
-                .refreshToken("dummy")
-                .userId(0L)
+                .refreshToken(refreshToken)
+                .userId(user.getId())
+                .phoneNumber("dummy")
+                .role("dummy")
+                .build();
+    }
+
+    /**
+     * TODO [SpringSecurity #11] refresh Token
+     * Nguyên tắc là tạo thêm 1 secretKey cho refresh Token => expiryDay nhiều hơn accessToken
+     * Mỗi lần refreshToken thì giữ nguyên cái refreshToken gốc, chỉ rênw accessToken,
+     * Đến khi nào refreshToken hết hạn thì bắt user đăng nhập lại.
+     */
+    public Object refreshToken(HttpServletRequest httpServletRequest) {
+        System.out.println(httpServletRequest.getHeader("x-token"));
+        String refreshToken = httpServletRequest.getHeader("x-token");
+
+        // Extract user from token
+        final String userName = jwtService.extractUserName(refreshToken, REFRESH_TOKEN);
+
+        // Check it into DB
+        var user = authRepository.findByUsername(userName);
+
+        String accessToken = null;
+        if (jwtService.isTokenValid(refreshToken, REFRESH_TOKEN, user.get())) {
+            accessToken = jwtService.generateToken(user.get());
+        }
+
+        return Auth.SignInResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .userId(user.get().getId())
                 .phoneNumber("dummy")
                 .role("dummy")
                 .build();
