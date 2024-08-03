@@ -2,6 +2,7 @@ package com.be.english.auth;
 
 import com.be.english.auth.db.AuthEntity;
 import com.be.english.auth.db.AuthRepository;
+import com.be.english.auth.db.JwtService;
 import com.be.english.common.AbstractEntity;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,6 +28,9 @@ public class AuthService {
     @Autowired
     @Lazy
     private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private JwtService jwtService;
 
     public Long signup(Auth.SignUpRequest request) {
 
@@ -84,8 +88,15 @@ public class AuthService {
          * TODO [SpringSecurity #7 END] xác thực thông tin đăng nhập của người dùng
          */
 
+        var user = authRepository.findByUsername(request.userName())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
+        /**
+         * TODO [SpringSecurity #9] impl generateToken
+         */
+        var accessToken = jwtService.generateToken(user); // impl generateToken
+
         return Auth.SignInResponse.builder()
-                .accessToken("dummy")
+                .accessToken(accessToken)
                 .refreshToken("dummy")
                 .userId(0L)
                 .phoneNumber("dummy")
