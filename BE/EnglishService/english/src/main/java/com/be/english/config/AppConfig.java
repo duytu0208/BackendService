@@ -27,23 +27,42 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 public class AppConfig {
 
     private final AuthRepository authRepository;
+    private final PreFilter preFilter;
 
     /**
      * TODO [SpringSecurity #2] define bean securityFilterChain
      * Sử dụng để cấu hình các quy tắc bảo mật cho ứng dụng web của bạn.
      * Bean này sẽ thiết lập các bộ lọc bảo mật cần thiết cho ứng dụng, quy định cách xử lý các yêu cầu HTTP,
      * và quản lý các phiên đăng nhập, đăng xuất, và quyền truy cập.
+     *
+     * csrf:
+     *     Tắt bảo vệ CSRF (Cross-Site Request Forgery). Đây là bảo mật giúp ngăn chặn các cuộc tấn công CSRF.
+     *     Việc tắt CSRF thường được thực hiện trong các ứng dụng RESTful
+     *     nơi mà các yêu cầu chủ yếu được thực hiện qua API và không sử dụng session để lưu trạng thái.
+     *
+     *authorizeHttpRequests:
+     *    Cho phép truy cập vào các URL /auth mà không cần xác thực, Các request khác đều phải xác thực
+     *
+     *sessionManagement:
+     *    Thiết lập ứng dụng không sử dụng session để lưu trữ trạng thái. Điều này thường được sử dụng trong các ứng dụng RESTful để đảm bảo rằng mỗi yêu cầu là độc lập và không dựa vào session. mỗi yêu cầu đến server sẽ mang theo một token (thường trong header Authorization), và ứng dụng sẽ xác thực người dùng dựa trên token này mà không cần lưu trữ trạng thái người dùng trên server (stateless)
+     *
+     * authenticationProvider
+     *    Đăng ký AuthenticationProvider tùy chỉnh (được định nghĩa trong phương thức authenticationProvider()) để xử lý việc xác thực người dùng.
+     *
+     * addFilterBefore:
+     *    Thêm bộ lọc tùy chỉnh preFilter vào list filter của Spring Security trước filter UsernamePasswordAuthenticationFilter.
+     *    Điều này cho phép bạn thực hiện các chức năng tùy chỉnh
+     *    trước khi request được xử lý bởi UsernamePasswordAuthenticationFilter
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable) //Disable trang login khi call api tới BE
+        http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request ->
-                        request.requestMatchers("/auth/**").permitAll()// Cho phép truy cập vào các URL /auth mà không cần xác thực
-                                .anyRequest().authenticated())// Các request khác đều phải xác thực
-                .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS)) // mỗi yêu cầu đến server sẽ mang theo một token (thường trong header Authorization), và ứng dụng sẽ xác thực người dùng dựa trên token này mà không cần lưu trữ trạng thái người dùng trên server (stateless)
-                .authenticationProvider(authenticationProvider());
-                // TODO: addFilterBefore
-
+                        request.requestMatchers("/auth/**").permitAll()
+                                .anyRequest().authenticated())
+                .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
+                .authenticationProvider(authenticationProvider()) // TODO [SpringSecurity #8] define bean authenticationProvider
+                .addFilterBefore(preFilter, UsernamePasswordAuthenticationFilter.class); // TODO [SpringSecurity #10] addFilterBefore
         return http.build();
     }
 
@@ -71,7 +90,6 @@ public class AppConfig {
     }
 
     /**
-     * TODO [SpringSecurity #8] define bean authenticationProvider
      * Từ mô tả của [SpringSecurity #7] để hiểu username được truyền vào như thế nào
      *
      * Bean authenticationProvider được sử dụng để cấu hình một nhà cung cấp xác thực (authentication provider) trong Spring Security.

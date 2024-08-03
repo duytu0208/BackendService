@@ -2,7 +2,6 @@ package com.be.english.auth;
 
 import com.be.english.auth.db.AuthEntity;
 import com.be.english.auth.db.AuthRepository;
-import com.be.english.auth.db.JwtService;
 import com.be.english.common.AbstractEntity;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,6 +11,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
