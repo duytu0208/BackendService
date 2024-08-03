@@ -5,6 +5,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
@@ -30,5 +32,16 @@ public class AppConfig {
                 // TODO: addFilterBefore
 
         return http.build();
+    }
+
+    /**
+     * TODO [SpringSecurity #3] define bean passwordEncoder
+     * mã hóa mật khẩu trước khi lưu vào cơ sở dữ liệu,
+     * hoặc để so sánh mật khẩu đã mã hóa với mật khẩu người dùng nhập vào.
+     * Tích hợp với spring security thì sẽ được dùng trong authenticationProvider
+     */
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }

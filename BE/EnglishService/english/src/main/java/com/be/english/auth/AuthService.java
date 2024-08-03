@@ -6,6 +6,9 @@ import com.be.english.common.AbstractEntity;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,6 +16,10 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     private final AuthRepository authRepository;
+
+    @Autowired
+    @Lazy
+    private PasswordEncoder passwordEncoder;
 
     public Long signup(Auth.SignUpRequest request) {
 
@@ -32,7 +39,7 @@ public class AuthService {
 
         var signupEntity = AuthEntity.builder()
                 .username(request.userName())
-                .password(request.password())
+                .password(passwordEncoder.encode(request.password())) /**TODO [SpringSecurity #4] encode password with passwordEncoder */
                 .status(AbstractEntity.Status.ACTIVE)
                 .signupData(signupRequestJson)
                 .build();
